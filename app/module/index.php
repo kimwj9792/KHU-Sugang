@@ -1,5 +1,6 @@
 <?php
 
+/*
 if ($is_login == false) {
     $fail_cnt = $db->count('login_fail',[
         'AND' => [
@@ -44,6 +45,7 @@ if ($is_login == false) {
     include_once '../app/view/login.php';
     exit;
 }
+*/
 
 /*
 $ch = curl_init();
