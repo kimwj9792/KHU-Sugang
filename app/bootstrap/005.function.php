@@ -10,7 +10,7 @@ function alert($msg)
 // alert 후 페이지 이동
 function alert2($msg, $redirect)
 {
-    ?><meta charset="utf-8"><script type="text/javascript">alert("<?=$msg?>//");location.replace("<?=$redirect?>//");</script><?php
+    ?><meta charset="utf-8"><script type="text/javascript">alert("<?=$msg?>");location.replace("<?=$redirect?>");</script><?php
     exit;
 }
 
