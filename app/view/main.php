@@ -35,8 +35,9 @@
                     <li><a href="#home" data-click="scroll-to-target">홈</a></li>
                     <li><a href="#term" data-click="scroll-to-target">학기</a></li>
                     <li><a href="#jungong" data-click="scroll-to-target">전공</a></li>
-                    <li><a href="#lecture" data-click="scroll-to-target">강좌</a></li>
-                    <li><a href="#work" data-click="scroll-to-target">WORK</a></li>
+                    <li><a href="#lecture" data-click="scroll-to-target">강의</a></li>
+                    <li><a href="#combination" data-click="scroll-to-target">조합</a></li>
+                    <li><a href="#result" data-click="scroll-to-target">결과</a></li>
                     <li><a href="#contact" data-click="scroll-to-target">문의</a></li>
                 </ul>
             </div>
@@ -50,7 +51,7 @@
             <h1>KHU수강에 오신 것을 환영합니다</h1>
             <h3>경희대학교 학부생 수강신청 도우미</h3>
             <p>
-                본 서비스는 개설 강좌 목록과 강의평을 일일이 찾아보는 것에 불편함을 느껴 개발되었습니다.<br>
+                본 서비스는 개설 강의 목록과 강의평을 일일이 찾아보는 것에 불편함을 느껴 개발되었습니다.<br>
                 원하는 조건에 맞는 최적의 시간표를 자동으로 구성해드립니다.<br>
                 (Database based on 2016.12.10.)
             </p>
@@ -189,9 +190,9 @@
     </div>
     <div id="lecture" class="content" data-scrollview="true">
         <div class="container">
-            <h2 class="content-title">강좌선택</h2>
+            <h2 class="content-title">강의선택</h2>
             <p class="content-desc" style="margin-bottom:30px;">
-                로그인을 하시면 이미 수강한 과목이 자동으로 필터링됩니다.<br>
+                로그인을 하시면 수강한 과목이 자동으로 필터링됩니다.<br>
                 수강허용학점, 선수과목 등 학사 규정을 고려하여 선택해주시기 바랍니다.<br>
                 <a href="http://sugang.khu.ac.kr/" target="_blank">[수강신청 홈페이지]</a>
             </p>
@@ -203,7 +204,7 @@
                                 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
                                     <?php
                                     for ($i=0; $i<count($_SESSION['jungong']); $i++) {
-                                        $data = $db->query("SELECT `jungong`, `haksu_1`, `haksu_2`, `haksu_3`, `lecture` , `lecture_code` , `hakjum` , `type` , `special` FROM `sugang` WHERE `year` = '".substr($_SESSION['term'], 0, 4)."' AND `term` = '".substr($_SESSION['term'], 4, 2)."' AND `jungong_code` = '".addslashes($_SESSION['jungong'][$i])."' GROUP BY `lecture_code` ORDER BY `haksu_2` ASC")->fetchAll();
+                                        $data = $db->query("SELECT `jungong`, `jungong_code`, `haksu_1`, `haksu_2`, `haksu_3`, `lecture` , `lecture_code` , `hakjum` , `type` , `special` FROM `sugang` WHERE `year` = '".substr($_SESSION['term'], 0, 4)."' AND `term` = '".substr($_SESSION['term'], 4, 2)."' AND `jungong_code` = '".addslashes($_SESSION['jungong'][$i])."' GROUP BY `lecture_code` ORDER BY `haksu_2` ASC")->fetchAll();
                                         ?>
                                         <div class="panel panel-default">
                                             <div class="panel-heading" role="tab" id="tab_h<?=$i?>">
@@ -222,7 +223,7 @@
                                                             ?>
                                                             <li class="list-group-item <?=(strpos($_SESSION['member_sugang'], $haksu)!==false)?'active':''?>">
                                                                 <label style="margin-bottom:0">
-                                                                    <input type="checkbox" name="lecture[]" value="<?=$data[$j]['lecture_code']?>" style="vertical-align:bottom;padding:0;margin:0;margin-right:5px;position: relative;top: -2px;width:13px;height:13px;position:relative;overflow:hidden;" <?=(in_array($data[$j]['lecture_code'], $_SESSION['lecture']))?'checked':''?>><?=$data[$j]['lecture']?> (<?=$haksu?>)
+                                                                    <input type="checkbox" name="lecture[]" value="<?=$data[$j]['jungong_code'].'|'.$data[$j]['lecture_code']?>" style="vertical-align:bottom;padding:0;margin:0;margin-right:5px;position: relative;top:-2px;width:13px;height:13px;overflow:hidden;" <?=(in_array($data[$j]['jungong_code'].'|'.$data[$j]['lecture_code'], $_SESSION['lecture']))?'checked':''?>><?=$data[$j]['lecture']?> (<?=$haksu?>)
                                                                     <span class="badge" style="margin-left:5px;"><?=$data[$j]['hakjum']?></span>
                                                                 </label>
                                                             </li>
@@ -242,7 +243,7 @@
                         <input type="hidden" name="type" value="lecture">
                         <div class="form-group">
                             <div class="col-md-12" style="text-align:center;">
-                                <button type="submit" class="btn btn-theme btn-block" <?=(!isset($_SESSION['jungong']))?' disabled':''?>>강좌선택</button>
+                                <button type="submit" class="btn btn-theme btn-block" <?=(!isset($_SESSION['jungong']))?' disabled':''?>>강의선택</button>
                             </div>
                         </div>
                     </form>
@@ -265,9 +266,112 @@
             </div>
         </div>
     </div>
-    <div id="work" class="content" data-scrollview="true">
-        <div class="container" data-animation="true" data-animation-type="fadeInDown">
-            <h2 class="content-title">Our Latest Work</h2>
+    <div id="combination" class="content" data-scrollview="true">
+        <div class="container">
+            <h2 class="content-title">강의조합</h2>
+            <p class="content-desc" style="margin-bottom:30px;">
+                Abeek 여부, 특이사항, 언어 등을 고려하여 조합할 강의만 선택해주세요.<br>
+                강의평가 점수가 0.00인 경우는 아직 평가된 적이 없는 경우입니다.<br>
+                절대 듣고 싶지 않은 강의는 선택을 해제하시면 됩니다.<br>
+                교양 과목이 포함되어 있을 경우 조합에 시간이 많이 걸릴 수 있습니다.
+            </p>
+            <div class="row">
+                <div class="col-md-12">
+                    <form class="form-horizontal" method="POST" action="/">
+                        <div class="form-group" style="text-align:center;">
+                            <div class="col-md-12" style="text-align:left;">
+                                <div class="panel-group" id="accordion2" role="tablist" aria-multiselectable="true">
+                                    <?php
+                                    for ($i=0; $i<count($_SESSION['lecture']); $i++) {
+                                        $lecture_t = explode('|', $_SESSION['lecture'][$i]);
+                                        $data = $db->query("SELECT * FROM `sugang` WHERE `year` = '".substr($_SESSION['term'], 0, 4)."' AND `term` = '".substr($_SESSION['term'], 4, 2)."' AND `jungong_code` = '".addslashes($lecture_t[0])."' AND `lecture_code` = '".addslashes($lecture_t[1])."'")->fetchAll();
+                                        ?>
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading" role="tab" id="tab_i<?=$i?>">
+                                                <h4 class="panel-title">
+                                                    <a role="button" data-toggle="collapse" data-parent="#accordion2" href="#tab_d<?=$i?>" aria-expanded="true" aria-controls="tab_d<?=$i?>">
+                                                        <?=$data[0]['lecture']?>
+                                                    </a>
+                                                </h4>
+                                            </div>
+                                            <div id="tab_d<?=$i?>" class="panel-collapse collapse" role="tabpanel" aria-labelledby="tab_i<?=$i?>">
+                                                <div class="panel-body">
+                                                    <ul class="list-group" style="margin-bottom:0;">
+                                                        <?php
+                                                        for ($j=0; $j<count($data); $j++) {
+                                                            $haksu = $data[$j]['haksu_1'].$data[$j]['haksu_2'].$data[$j]['haksu_3']."-".$data[$j]['haksu_4'];
+                                                            ?>
+                                                            <li class="list-group-item">
+                                                                <label style="margin-bottom:0">
+                                                                    <input type="checkbox" name="combination[]" value="<?=$data[$j]['idx']?>" style="vertical-align:bottom;padding:0;margin:0;margin-right:5px;position: relative;top:-2px;width:13px;height:13px;overflow:hidden;" <?=(in_array($data[$j]['idx'], $_SESSION['combination']))?'checked':''?>><?=$haksu?> / <?=$data[$j]['professor']?> (<?=$data[$j]['score']?>)<br><?=$data[$j]['timetable']?><br><?=$data[$j]['special']?> <?=$data[$j]['language']?>
+                                                                </label>
+                                                            </li>
+                                                            <?php
+                                                        }
+                                                        ?>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <?php
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                            <div class="col-md-12" style="text-align:center;">
+                                <select class="form-control" name="op1" style="margin-bottom:10px;">
+                                    <option value="1" <?=($_SESSION['op1']=='1')?'selected':''?>>9시 고려하지 않음 (강의평가 최우선)</option>
+                                    <option value="2" <?=($_SESSION['op1']=='2')?'selected':''?>>9시 최대한 적게</option>
+                                    <option value="3" <?=($_SESSION['op1']=='3')?'selected':''?>>9시 미포함</option>
+                                </select>
+                                <select class="form-control" name="op2" onchange="check();" style="margin-bottom:10px;">
+                                    <option value="1" <?=($_SESSION['op2']=='1')?'selected':''?>>공강 고려하지 않음 (강의평가 최우선)</option>
+                                    <option value="2" <?=($_SESSION['op2']=='2')?'selected':''?>>금요일 공강</option>
+                                    <option value="3" <?=($_SESSION['op2']=='3')?'selected':''?>>월요일 공강</option>
+                                    <option value="4" <?=($_SESSION['op2']=='4')?'selected':''?>>2일 공강</option>
+                                    <option value="5" <?=($_SESSION['op2']=='5')?'selected':''?>>3일 공강</option>
+                                    <option value="6" <?=($_SESSION['op2']=='6')?'selected':''?>>4일 공강</option>
+                                </select>
+                            </div>
+                        </div>
+                        <input type="hidden" name="type" value="combination">
+                        <div class="form-group">
+                            <div class="col-md-12" style="text-align:center;">
+                                <button type="submit" class="btn btn-theme btn-block" <?=(!isset($_SESSION['lecture']))?' disabled':''?>>강의조합</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="content bg-black-darker has-bg" data-scrollview="true">
+        <div class="content-bg">
+            <img src="/assets/img/quote-bg.jpg">
+        </div>
+        <div class="container" data-animation="true" data-animation-type="fadeInLeft">
+            <div class="row">
+                <div class="col-md-12 quote">
+                    <i class="fa fa-quote-left"></i>
+                    수강신청도 실력이야, 너희 손을 원망해.
+                    <i class="fa fa-quote-right"></i>
+                    <small>익명, 2014.12.03.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="result" class="content" data-scrollview="true">
+        <div class="container">
+            <h2 class="content-title">결과</h2>
+            <p class="content-desc" style="margin-bottom:30px;">
+                KHU수강 서비스가 생성한 추천하는 시간표입니다.<br>
+                수강신청 중 성공했거나 실패했을 경우 재조합하시면 새로운 결과가 생성됩니다.
+            </p>
+            <div class="row">
+                <div class="col-md-12">
+
+                </div>
+            </div>
         </div>
     </div>
     <div id="contact" class="content bg-silver-lighter" data-scrollview="true">

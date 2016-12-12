@@ -24,7 +24,7 @@
             <div class="news-caption">
                 <h4 class="caption-title"><i class="fa fa-diamond text-success"></i> KHU수강에 오신 것을 환영합니다</h4>
                 <p>
-                    본 서비스는 개설 강좌 목록과 강의평을 일일이 찾아보는 것에 불편함을 느껴 개발되었습니다.
+                    본 서비스는 개설 강의 목록과 강의평을 일일이 찾아보는 것에 불편함을 느껴 개발되었습니다.
                 </p>
             </div>
         </div>
