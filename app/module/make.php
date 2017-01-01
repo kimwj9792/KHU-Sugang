@@ -35,7 +35,12 @@ function table_gen(&$data, &$table, $table_default, $key) {
             array_shift($table);
         }
         if (count($table) == 0) {
-            exit("[]");
+            //exit("[]");
+            $_SESSION['timetable_max'] = 0;
+            $_SESSION['timetable_now'] = 1;
+            $_SESSION['timetable'] = "[]";
+            header('Location: /#result');
+            exit;
         }
     }
 }
@@ -126,6 +131,7 @@ foreach ($timetable_set as $key => $val) {
     if ($_SESSION['op1'] == "3") {
         if (strpos(json_encode($val), '"09:00-') !== false) {
             unset($timetable_set[$key]);
+            continue;
         }
     } elseif ($_SESSION['op1'] == "2") {
         $timetable_set[$key]['score'] -= substr_count(json_encode($val), '"09:00-')*30;
@@ -133,10 +139,12 @@ foreach ($timetable_set as $key => $val) {
     if ($_SESSION['op2'] == "2") {
         if (count($timetable_set[$key]['time']['금']) != 0) {
             unset($timetable_set[$key]);
+            continue;
         }
     } elseif ($_SESSION['op2'] == "3") {
         if (count($timetable_set[$key]['time']['월']) != 0) {
             unset($timetable_set[$key]);
+            continue;
         }
     } elseif ($_SESSION['op2']>=4 && $_SESSION['op2']<=6) {
         $g_cnt = 0;
@@ -147,9 +155,24 @@ foreach ($timetable_set as $key => $val) {
         if (count($timetable_set[$key]['time']['금']) == 0) {$g_cnt++;}
         if ($g_cnt != $_SESSION['op2']-2) {
             unset($timetable_set[$key]);
+            continue;
         }
     }
 }
+// 시간 삭제
+foreach ($timetable_set as $key => $val) {
+    unset($timetable_set[$key]['time']);
+}
 // 출력
 usort($timetable_set, 'cmp');
-echo json_encode($timetable_set);
+//echo json_encode($timetable_set);
+
+if ($URL[1] == "") {
+    $_SESSION['timetable_now'] = 1;
+    $_SESSION['timetable'] = json_encode($timetable_set[0]);
+} else {
+    $_SESSION['timetable_now'] = $URL[1];
+    $_SESSION['timetable'] = json_encode($timetable_set[$URL[1]-1]);
+}
+$_SESSION['timetable_max'] = count($timetable_set);
+header('Location: /#result');

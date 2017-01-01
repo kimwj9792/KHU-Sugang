@@ -50,10 +50,11 @@
         <div class="container home-content">
             <h1>KHU수강에 오신 것을 환영합니다</h1>
             <h3>경희대학교 학부생 수강신청 도우미</h3>
+            <h5>2017년 1학기는 개설강좌가 확정되지 않아,<br>2차 희과담 시작일인 2017.01.18(수) 전후로 열립니다.</h5>
             <p>
                 본 서비스는 개설 강의 목록과 강의평을 일일이 찾아보는 것에 불편함을 느껴 개발되었습니다.<br>
                 원하는 조건에 맞는 최적의 시간표를 자동으로 구성해드립니다.<br>
-                (Database based on 2016.12.10.)
+                (Database based on 2016.12.18.)
             </p>
             <?php
             if ($is_login == false) {
@@ -272,8 +273,7 @@
             <p class="content-desc" style="margin-bottom:30px;">
                 Abeek 여부, 특이사항, 언어 등을 고려하여 조합할 강의만 선택해주세요.<br>
                 강의평가 점수가 0.00인 경우는 아직 평가된 적이 없는 경우입니다.<br>
-                절대 듣고 싶지 않은 강의는 선택을 해제하시면 됩니다.<br>
-                교양 과목이 포함되어 있을 경우 조합에 시간이 많이 걸릴 수 있습니다.
+                절대 듣고 싶지 않은 강의는 선택을 해제하시면 됩니다.
             </p>
             <div class="row">
                 <div class="col-md-12">
@@ -303,7 +303,10 @@
                                                             ?>
                                                             <li class="list-group-item">
                                                                 <label style="margin-bottom:0">
-                                                                    <input type="checkbox" name="combination[]" value="<?=$data[$j]['idx']?>" style="vertical-align:bottom;padding:0;margin:0;margin-right:5px;position: relative;top:-2px;width:13px;height:13px;overflow:hidden;" <?=(in_array($data[$j]['idx'], $_SESSION['combination']))?'checked':''?>><?=$haksu?> / <?=$data[$j]['professor']?> (<?=$data[$j]['score']?>)<br><?=$data[$j]['timetable']?><br><?=$data[$j]['special']?> <?=$data[$j]['language']?>
+                                                                    <input type="checkbox" name="combination[]" value="<?=$data[$j]['idx']?>" style="vertical-align:bottom;padding:0;margin:0;margin-right:5px;position: relative;top:-2px;width:13px;height:13px;overflow:hidden;" <?=(in_array($data[$j]['idx'], $_SESSION['combination']))?'checked':''?>>
+                                                                    <?=$haksu?> / <?=$data[$j]['professor']?> (<?=$data[$j]['score']?>) / <a href="http://163.180.96.142/servlets/timetable?attribute=syllabus_kor&p_year=<?=substr($_SESSION['term'], 0, 4)?>&p_term=<?=substr($_SESSION['term'], 4, 2)?>&p_teach=<?=$data[$j]['professor_code']?>&p_code=<?=$data[$j]['haksu_1'].$data[$j]['haksu_2'].$data[$j]['haksu_3'].$data[$j]['haksu_4']?>&p_subjt=<?=$data[$j]['lecture_code']?>&lang=kor" target="_blank">강의계획서</a> / <a href="http://163.180.96.142/servlets/timetable?attribute=eval_kor&p_year=<?=substr($_SESSION['term'], 0, 4)?>&p_term=<?=substr($_SESSION['term'], 4, 2)?>&p_teach=<?=$data[$j]['professor_code']?>&p_subjt_cd=<?=$data[$j]['lecture_code']?>&lang=kor" target="_blank">강의평가</a><br>
+                                                                    <?=$data[$j]['timetable']?><br>
+                                                                    <?=$data[$j]['special']?> <?=$data[$j]['language']?>
                                                                 </label>
                                                             </li>
                                                             <?php
@@ -319,12 +322,12 @@
                                 </div>
                             </div>
                             <div class="col-md-12" style="text-align:center;">
-                                <select class="form-control" name="op1" style="margin-bottom:10px;">
+                                <select class="form-control" name="op1" style="margin-bottom:10px;" <?=(!isset($_SESSION['lecture']))?' disabled':''?>>
                                     <option value="1" <?=($_SESSION['op1']=='1')?'selected':''?>>9시 고려하지 않음 (강의평가 최우선)</option>
                                     <option value="2" <?=($_SESSION['op1']=='2')?'selected':''?>>9시 최대한 적게</option>
                                     <option value="3" <?=($_SESSION['op1']=='3')?'selected':''?>>9시 미포함</option>
                                 </select>
-                                <select class="form-control" name="op2" onchange="check();" style="margin-bottom:10px;">
+                                <select class="form-control" name="op2" style="margin-bottom:10px;" <?=(!isset($_SESSION['lecture']))?' disabled':''?>>
                                     <option value="1" <?=($_SESSION['op2']=='1')?'selected':''?>>공강 고려하지 않음 (강의평가 최우선)</option>
                                     <option value="2" <?=($_SESSION['op2']=='2')?'selected':''?>>금요일 공강</option>
                                     <option value="3" <?=($_SESSION['op2']=='3')?'selected':''?>>월요일 공강</option>
@@ -364,12 +367,133 @@
         <div class="container">
             <h2 class="content-title">결과</h2>
             <p class="content-desc" style="margin-bottom:30px;">
-                KHU수강 서비스가 생성한 추천하는 시간표입니다.<br>
-                수강신청 중 성공했거나 실패했을 경우 재조합하시면 새로운 결과가 생성됩니다.
+                KHU수강 서비스가 생성한 추천하는 조합입니다.<br>
+                수강신청 중 성공 및 실패 여부를 선택하시면 이를 고려하여 재조합됩니다.
             </p>
             <div class="row">
                 <div class="col-md-12">
-
+                    <div class="panel panel-default">
+                        <?php
+                        $timetable = json_decode($_SESSION['timetable'], true);
+                        $db_data = $db->select('sugang','*',[
+                            'idx' => $timetable['lecture']
+                        ]);
+                        $table = ['월'=>[],'화'=>[],'수'=>[],'목'=>[],'금'=>[],'토'=>[]];
+                        foreach ($db_data as $db_tmp) {
+                            $db_tmp['timetable'] = str_replace('<br>', ' ', $db_tmp['timetable']);
+                            $temp = explode(':', $db_tmp['timetable']);
+                            for ($i=0; $i<count($temp)-1; $i+=2) {
+                                $temp2 = explode(' ', $temp[$i]);
+                                $time_day = $temp2[count($temp2)-2];
+                                $time_start = $temp2[count($temp2)-1].":";
+                                $temp2 = explode('-', $temp[$i+1]);
+                                $time_start .= $temp2[0];
+                                $time_end = $temp2[1].":";
+                                $temp2 = explode(' ', $temp[$i+2]);
+                                $time_end .= $temp2[0];
+                                $temp2 = explode('(', $temp[$i+2]);
+                                $temp3 = explode(')', $temp2[1]);
+                                $time_where = $temp3[0];
+                                if ($time_day == "") {
+                                    $table['월'][count($table['월'])] = "[".$time_start."-".$time_end."] ".$db_tmp['lecture']." (".$db_tmp['haksu_1'].$db_tmp['haksu_2'].$db_tmp['haksu_3'].$db_tmp['haksu_4'].") / ".$db_tmp['professor']." / ".$time_where;
+                                    $table['화'][count($table['화'])] = "[".$time_start."-".$time_end."] ".$db_tmp['lecture']." (".$db_tmp['haksu_1'].$db_tmp['haksu_2'].$db_tmp['haksu_3'].$db_tmp['haksu_4'].") / ".$db_tmp['professor']." / ".$time_where;
+                                    $table['수'][count($table['수'])] = "[".$time_start."-".$time_end."] ".$db_tmp['lecture']." (".$db_tmp['haksu_1'].$db_tmp['haksu_2'].$db_tmp['haksu_3'].$db_tmp['haksu_4'].") / ".$db_tmp['professor']." / ".$time_where;
+                                    $table['목'][count($table['목'])] = "[".$time_start."-".$time_end."] ".$db_tmp['lecture']." (".$db_tmp['haksu_1'].$db_tmp['haksu_2'].$db_tmp['haksu_3'].$db_tmp['haksu_4'].") / ".$db_tmp['professor']." / ".$time_where;
+                                    $table['금'][count($table['금'])] = "[".$time_start."-".$time_end."] ".$db_tmp['lecture']." (".$db_tmp['haksu_1'].$db_tmp['haksu_2'].$db_tmp['haksu_3'].$db_tmp['haksu_4'].") / ".$db_tmp['professor']." / ".$time_where;
+                                } else {
+                                    $table[$time_day][count($table[$time_day])] = "[".$time_start."-".$time_end."] ".$db_tmp['lecture']." (".$db_tmp['haksu_1'].$db_tmp['haksu_2'].$db_tmp['haksu_3'].$db_tmp['haksu_4'].") / ".$db_tmp['professor']." / ".$time_where;
+                                }
+                            }
+                        }
+                        foreach ($table as $key => $val) {
+                            sort($table[$key]);
+                        }
+                        ?>
+                        <div class="panel-heading"><h3 class="panel-title">월요일</h3></div>
+                        <div class="panel-body">
+                            <?php
+                            if ($_SESSION['timetable_max'] == "0") {
+                                echo "조합이 불가능합니다.";
+                            }
+                            foreach ($table['월'] as $key) {
+                                echo $key."<br>";
+                            }
+                            ?>
+                        </div>
+                        <div class="panel-heading"><h3 class="panel-title">화요일</h3></div>
+                        <div class="panel-body">
+                            <?php
+                            foreach ($table['화'] as $key) {
+                                echo $key."<br>";
+                            }
+                            ?>
+                        </div>
+                        <div class="panel-heading"><h3 class="panel-title">수요일</h3></div>
+                        <div class="panel-body">
+                            <?php
+                            foreach ($table['수'] as $key) {
+                                echo $key."<br>";
+                            }
+                            ?>
+                        </div>
+                        <div class="panel-heading"><h3 class="panel-title">목요일</h3></div>
+                        <div class="panel-body">
+                            <?php
+                            foreach ($table['목'] as $key) {
+                                echo $key."<br>";
+                            }
+                            ?>
+                        </div>
+                        <div class="panel-heading"><h3 class="panel-title">금요일</h3></div>
+                        <div class="panel-body">
+                            <?php
+                            foreach ($table['금'] as $key) {
+                                echo $key."<br>";
+                            }
+                            ?>
+                        </div>
+                        <div class="panel-heading"><h3 class="panel-title">토요일</h3></div>
+                        <div class="panel-body">
+                            <?php
+                            foreach ($table['토'] as $key) {
+                                echo $key."<br>";
+                            }
+                            ?>
+                        </div>
+                    </div>
+                    <ul class="pager">
+                        <?php
+                        if ($_SESSION['timetable_now'] == 1 || !isset($_SESSION['timetable_now'])) {
+                            ?>
+                            <li class="disabled"><a>&larr;&nbsp;이전</a></li>
+                            <?php
+                        } else{
+                            ?>
+                            <li><a href="/make/<?=($_SESSION['timetable_now']-1)?>">&larr;&nbsp;이전</a></li>
+                            <?php
+                        }
+                        ?>
+                        <li><a><?=$_SESSION['timetable_now']?> / <?=$_SESSION['timetable_max']?></a></li>
+                        <?php
+                        if ($_SESSION['timetable_now'] == $_SESSION['timetable_max'] || $_SESSION['timetable_max'] == 0) {
+                            ?>
+                            <li class="disabled"><a>다음&nbsp;&rarr;</a></li>
+                            <?php
+                        } else{
+                            ?>
+                            <li><a href="/make/<?=($_SESSION['timetable_now']+1)?>">다음&nbsp;&rarr;</a></li>
+                            <?php
+                        }
+                        ?>
+                    </ul>
+                    <form method="POST" action="/">
+                        <input type="hidden" name="type" value="save">
+                        <div class="form-group">
+                            <div class="col-md-offset-3 col-md-6" style="text-align:center;">
+                                <button type="submit" class="btn btn-theme btn-block" <?=(!isset($_SESSION['timetable_now'])||$is_login==false)?' disabled':''?>>저장</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

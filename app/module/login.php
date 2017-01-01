@@ -32,6 +32,10 @@ if ($is_login == false) {
         $result = curl_exec($ch);
         curl_close($ch);
         if (strpos($result, '<title>') !== false) {
+            $save = $db->get('member','save',['idx'=>$_POST['id']]);
+            if ($save != "") {
+                $_SESSION = json_decode($save, true);
+            }
             $_SESSION['member_idx'] = $_POST['id'];
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, "https://khuis.khu.ac.kr/java/servlet/controllerCosy?action=17&WID=hsipa2002&Pkg=JSP&URL=JSP.servlet/controllerHssj[(QUES)]action=21");
